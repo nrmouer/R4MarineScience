@@ -56,4 +56,37 @@ mass_compare_plot <- penguins %>%
 mass_compare_plot
 
 ```
+#Challenge 2:change above plot to show standard error instead of standard deviation
+```{r}
+mass_compare_plot_se <- penguins %>%
+  group_by(species, island) %>%
+  summarise(
+    mean_mass = mean(body_mass_g, na.rm = TRUE),
+    se_body_mass = sd(body_mass_g, na.rm = TRUE) / sqrt(length(na.omit(body_mass_g))),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = species, y = mean_mass, colour = island)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean_mass - se_body_mass, 
+                    ymax = mean_mass + se_body_mass), 
+                width = 0.2) +
+  labs(title = "Mean Body Mass by Species and Island",
+       subtitle = "Error bars represent standard error",
+       y = "Mean Body Mass (g)",
+       x = "Species") +
+  theme_minimal()
+
+mass_compare_plot_se
+```
+#Create output directories if they do not exist
+```{r}
+if (!dir.exists("outputs/figures")) dir.create("outputs/figures") # folder for figs
+if (!dir.exists("outputs/tables")) dir.create("outputs/tables") # folder for tables
+if (!dir.exists("Rdata")) dir.create("Rdata") # folder for Rdata objects
+
+```
+
+
+```
 
