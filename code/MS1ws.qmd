@@ -3,3 +3,57 @@ title: "MS1ws"
 format: html
 ---
 
+# Using R for Marine Science
+```{r}
+#| label: setup-data
+#| include: false
+
+# Executes the script and loads the clean data into your environment
+source("Penguins.R")
+```
+
+#Visulizing penguin body shape and size#Challenge 1 Grouping and creating boxplot
+```{r}
+body_challenge <- penguins %>%
+  group_by(species, island) %>%
+summarise(
+  median_mass_g = median(body_mass_g, na.rm = TRUE)
+)
+
+penguins |> ggplot(aes(x = species, y = body_mass_g, fill = island)) +
+  geom_boxplot() +
+  labs(title = " Body Mass of Penguins by Species and Island",
+       x = "Species",
+       y = "Body Mass (g)") +
+  theme_minimal()
+
+body_challenge
+
+```
+
+#Visualizing mean trends with uncertainty
+```{r}
+# Pipe directly from aggregation to plotting with error bars
+mass_compare_plot <- penguins %>%
+  group_by(species, island) %>%
+  summarise(
+    mean_mass = mean(body_mass_g, na.rm = TRUE),
+    sd_mass = sd(body_mass_g, na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  ggplot(aes(x = species, y = mean_mass, colour = island)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = mean_mass - sd_mass, 
+                    ymax = mean_mass + sd_mass), 
+                width = 0.2) +
+  labs(title = "Mean Body Mass by Species and Island",
+       subtitle = "Error bars represent standard deviation",
+       y = "Mean Body Mass (g)",
+       x = "Species") +
+  theme_minimal()
+
+mass_compare_plot
+
+```
+
