@@ -2,6 +2,20 @@
 title: "WS2_Estuary_Prac"
 format: html
 editor: visual
+output: 
+ html_document:
+    code_folding: show
+    collapse: no
+    df_print: paged
+    fig_caption: yes
+    fig_height: 6
+    fig_width: 10
+    highlight: textmate
+    theme: spacelab
+    toc: yes
+    toc_float: yes
+editor_options: 
+  chunk_output_type: inline
 ---
 Estuary Practical
 ```{r setup, include=FALSE}
@@ -25,4 +39,144 @@ rm(list = ls())
 library(tidyverse) # Inc dplyr, ggplot2, lubridate etc
 library(readxl) # For reading in excel files
 ```
+
+#load excel files
+```{r}
+catch1 <- read_excel(here::here("data/workshop2/estuary_catch_log.xlsx"), sheet = "Lower_ross")
+catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
+catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
+catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
+```
+
+#inspect indiviual tabs
+```{r}
+catch1
+catch2
+catch3
+catch4
+```
+
+#bind rows together
+```{r}
+catch_data <- bind_rows(catch1, catch2, catch3, catch4)
+# Clean up the environment
+rm(catch1, catch2, catch3, catch4) # Clean up the environment
+```
+
+#prelim check
+```{r}
+catch_data
+head(catch_data)
+glimpse(catch_data)
+str(catch_data)
+```
+
+#check specific variables
+```{r}
+catch_data |> 
+  distinct(site)
+
+catch_data |> 
+  distinct(species)
+```
+# Load metadata
+```{r load-metadata}
+metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
+```
+# Checks
+```{r inspect-metadata}
+head(metadata)
+glimpse(metadata)
+```
+
+### Fix site names in data and metadata and convert character to factor variables
+```{r fix-site-names}
+catch_data <- catch_data |>
+  mutate(
+    site = str_to_lower(str_trim(site)),
+    site = str_replace_all(site, " ", "_")) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor)
+  )
+
+metadata <- metadata |>
+  mutate(
+    site_name = str_to_lower(str_trim(site_name)),
+    site_name = str_replace_all(site_name, " ", "_")) |> 
+  # Convert all chr to fct
+  mutate(across(where(is.character), as_factor)
+  )
+```
+# Recheck
+```{r recheck-site-names}
+catch_data |> 
+  str()
+# catch_data |> 
+#   distinct(site)
+str(metadata)
+```
+###  Load Taxonomic Dictionary
+```{r load-species-dict}
+species_dict <- read_csv("../data/workshop2/species_dictionary.csv")
+# Check
+head(species_dict)
+```
+#check species name
+```{r}
+catch_data |> 
+  distinct(species)
+# Can see these are different to the dictionary
+species_dict |>
+  distinct(common_name)
+```
+#fix species names in catch_data to match dictionary
+```{r}
+catch_data <- catch_data |>
+  mutate(
+    species = str_to_lower(str_trim(species)),
+    species = str_replace_all(species, " ", "_")
+  )
+```
+### Create new variable ("scientific_name") in catch log by joining with taxonomic dictionary 
+```{r join-species-dict}
+catch_data <- catch_data |>
+  mutate(common_name = species) |>
+  left_join(species_dict, by = join_by(common_name))
+```
+#recheck
+```{r}
+glimpse(catch_data)
+```
+# Load the sonde data, given code for data
+```{r load-sonde}
+source(here::here("code/diw_sensor.R"))
+```
+#join catch data with metadata and sensor data
+```{r}
+catch_data_final <- catch_data |>
+  left_join(metadata, by = join_by(site == site_name)) |>
+  left_join(sensor_daily, by = join_by(site, date))
+```
+#check
+```{r}
+glimpse(catch_data_final)
+```
+#wrangle data set to include the zeros
+```{r}
+catch_data_final <- 
+catch_data_final |> 
+  complete(
+    nesting(site, date, 
+           # lat, lon, 
+            zone, mean_temp, mean_salinity, mean_turbidity),
+    scientific_name
+  ) |>
+  mutate(
+    # Convert the resulting NA counts to 0
+    count = coalesce(count, 0)
+  )
+```
+###Finished data wrangling####
+
+
 
