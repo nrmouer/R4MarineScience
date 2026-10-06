@@ -1,0 +1,163 @@
+---
+title: "R4MSWorkshop2"
+format: html
+editor: visual
+---
+
+## Starting workshop 2
+
+Loading things in
+
+```{r}
+#install.packages('tidyverse')
+library('tidyverse')
+table1
+table2
+table3
+```
+
+2.2 tidying data
+
+```{r}
+# Compute rate per 10,000
+table1 %>% 
+  mutate(rate = cases / population * 10000)
+# Compute cases per year
+table1 %>% 
+  count(year, wt = cases)
+# Visualise changes over time
+ggplot(table1, aes(year, cases)) + 
+  geom_line(aes(group = country), colour = "grey50") + 
+  geom_point(aes(colour = country))
+
+```
+
+2.4 Pivoting data to make it tidy+lengthening datasets With Billboard data
+
+```{r}
+billboard
+billboard |> 
+  pivot_longer(
+    cols = starts_with("wk"), 
+    names_to = "week", 
+    values_to = "rank"
+  )
+
+billboard |> 
+  pivot_longer(
+    cols = starts_with("wk"), 
+    names_to = "week", 
+    values_to = "rank",
+    values_drop_na = TRUE
+  )
+
+df <- tribble(
+  ~id,  ~bp1, ~bp2,
+  "A",  100,  120,
+  "B",  140,  115,
+  "C",  120,  125
+)
+
+df |> 
+  pivot_longer(
+    cols = bp1:bp2,
+    names_to = "measurement",
+    values_to = "value"
+  )
+
+```
+
+2.5 Widening datasets #using medical dataset
+
+```{r}
+cms_patient_experience
+cms_patient_experience |> 
+  distinct(measure_cd, measure_title)
+
+cms_patient_experience |> 
+  pivot_wider(
+    names_from = measure_cd,
+    values_from = prf_rate
+  )
+
+cms_patient_experience |> 
+  pivot_wider(
+    id_cols = starts_with("org"),
+    names_from = measure_cd,
+    values_from = prf_rate
+  )
+print(cms_patient_experience)
+```
+
+Pivoting wider #bloodPressure example
+
+```{r}
+df <- tribble(
+  ~id, ~measurement, ~value,
+  "A",        "bp1",    100,
+  "B",        "bp1",    140,
+  "B",        "bp2",    115, 
+  "A",        "bp2",    120,
+  "A",        "bp3",    105
+)
+
+df |> 
+  pivot_wider(
+    names_from = measurement,
+    values_from = value
+  )
+
+df |> 
+  distinct(measurement) |> 
+  pull()
+
+df |> 
+  select(-measurement, -value) |> 
+  distinct()
+
+#pivot wider 
+df |> 
+  select(-measurement, -value) |> 
+  distinct() |> 
+  mutate(x = NA, y = NA, z = NA)
+
+  
+```
+
+2.6 Exercise with palmerpenguins
+
+```{r}
+library(palmerpenguins)
+# Create a long version of the penguins dataset
+
+penguins_long <- penguins |>
+  pivot_longer(
+    cols = c(bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g),
+    names_to = "measurement_type",
+    values_to = "value"
+  )
+# View the result
+head(penguins_long)
+
+#visualize the dataset
+penguins_long |>
+  drop_na(value) |>
+  ggplot(aes(x = value, fill = species)) +
+  geom_histogram(bins = 30, alpha = 0.7, colour = "black") +
+  facet_wrap(~ measurement_type, scales = "free_x") +
+  theme_minimal() +
+  labs(
+    title = "Morphometric distributions across penguin species",
+    x = "Measurement value",
+    y = "Frequency"
+  )
+
+#calc mean body mass for each species on each island
+mass_summary <- penguins |>
+  drop_na(body_mass_g) |>
+  group_by(species, island) |>
+  summarise(mean_mass = mean(body_mass_g))
+
+head(mass_summary)
+
+```
