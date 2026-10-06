@@ -160,4 +160,70 @@ mass_summary <- penguins |>
 
 head(mass_summary)
 
+#above is good but we can use pivot_wider to tidy data even better for publication
+mass_matrix <- mass_summary |>
+  pivot_wider(
+    names_from = island,
+    values_from = mean_mass
+  )
+
+head(mass_matrix)
+
+
+```
+
+2.7 separting and uniting datasets #using table 3 dataset
+
+```{r}
+table3
+#split column up into 2 variables (cases and pop)
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+
+#if you want to separate using a specific character
+table3 %>% 
+  separate(rate, into = c("cases", "population"), sep = "/")
+
+
+#now variables listed as interger types with true value
+table3 %>% 
+  separate(rate, into = c("cases", "population"), convert = TRUE)
+
+#separates the last two digits of each year
+table3 %>% 
+  separate(year, into = c("century", "year"), sep = 2)
+
+#use unite to combine multi columns 
+table5 %>% 
+  unite(new, century, year, sep = "")
+```
+
+2.8 Wrangling strings and dates
+
+```{r}
+library(tidyverse)
+#help sorting messy datesets with different types of the same data/name
+
+# A remarkably messy data frame of field sites
+messy_sites <- tibble(
+  site_id = c(" Nelly Bay", "nelly_bay", "NELLY BAY", " Geoffrey_Bay ", "geoffrey bay")
+)
+
+# Using stringr within mutate to standardize the text
+clean_sites <- messy_sites |>
+  mutate()
+
+# 1. Convert everything to lowercase
+site_clean = str_to_lower(site_id)
+
+# 2. Replace any spaces with underscores
+site_clean = str_replace_all(site_clean, pattern = " ", replacement = "_")
+
+# 3. Trim any leading or trailing whitespace (invisible spaces at the ends)
+site_clean = str_trim(site_clean)
+
+  
+print(clean_sites)
+  
+    
 ```
