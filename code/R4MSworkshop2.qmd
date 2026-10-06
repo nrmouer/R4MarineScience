@@ -354,11 +354,24 @@ clean_log <- sensor_log |>
 print(clean_log)
 
 ```
+Load helping tools 
+```{r}
+library(chattr)
+library(ellmer)
+
+# Create the Gemini chat connection
+chat <- ellmer::chat_google_gemini(model = "gemini-flash-latest")
+
+# Tell chattr to use this connection
+chattr_use(chat)
+```
+
 2.11 Practical exercises: messy data sets Penguins 
 ```{r}
 # Make sure packages are loaded
 library(tidyverse)
 library(palmerpenguins)
+library(lubridate)
 
 # The messy metadata provided by your colleague
 island_metadata <- tibble(
@@ -369,6 +382,39 @@ island_metadata <- tibble(
 
 print(island_metadata)
 
+#exercise 1 cleaning up the metadata
+clean_metadata  <- island_metadata |>
+  mutate(
+    # Clean up island names
+    island_name = str_trim(island_name),
+    island_name = str_to_title(island_name),
+    #lubricate the dates to a proper format
+    date_format = case_when(
+      str_detect(station_install, "/") ~ "dmy",
+      str_detect(station_install, "-") ~ "dmy",
+      TRUE ~ "unknown"
+    ),
+    # Convert station_install to a proper date
+    station_install = dmy(station_install)
+  )
+print(clean_metadata)
 
+# exercise 2 combine clean metadata with penguins dataset
+penguins_spatial  <- palmerpenguins::penguins |>
+  left_join(clean_metadata, by = join_by(island ==island_name))
+
+#scroll to the right to see the new columns 
+head(penguins_spatial)
+
+#exercise 3 clean table showing maximum body mass recorded for each species, separted by island 
+clean_summary <- penguins_spatial |>
+  drop_na(body_mass_g) |>
+  group_by(species, island) |>
+  summarise(max_mass = max(body_mass_g), .groups = "drop") |>
+  pivot_wider(
+    names_from = island,
+    values_from = max_mass
+  )
+print(clean_summary)
 ```
 
