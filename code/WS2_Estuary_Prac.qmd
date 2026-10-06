@@ -1,0 +1,28 @@
+---
+title: "WS2_Estuary_Prac"
+format: html
+editor: visual
+---
+Estuary Practical
+```{r setup, include=FALSE}
+# Set options, housekeeping
+knitr::opts_chunk$set(
+	echo = TRUE,
+	include = TRUE,
+	message = FALSE,
+	warning = FALSE)
+```
+
+# Housekeeping
+```{r}
+#| message: true
+#| warning: false
+rm(list = ls())
+```
+
+#loading in R packages 
+```{r}
+library(tidyverse) # Inc dplyr, ggplot2, lubridate etc
+library(readxl) # For reading in excel files
+```
+
