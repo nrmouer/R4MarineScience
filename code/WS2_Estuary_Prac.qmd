@@ -37,70 +37,61 @@ execute:
 ---
 Estuary Practical
 
-
-# Housekeeping
-```{r}
+```{r housekeeping}
 #| message: true
 #| warning: false
 rm(list = ls())
 ```
 
-#loading in R packages 
-```{r}
+```{r load R packages}
 library(tidyverse) # Inc dplyr, ggplot2, lubridate etc
 library(readxl) # For reading in excel files
 ```
 
-#load excel files
-```{r}
+```{r load excel files}
 catch1 <- read_excel(here::here("data/workshop2/estuary_catch_log.xlsx"), sheet = "Lower_ross")
 catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
 catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
 catch4 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 4)
 ```
 
-#inspect indiviual tabs
-```{r}
+```{r check indivual tabs}
 catch1
 catch2
 catch3
 catch4
 ```
 
-#bind rows together
-```{r}
+```{r bind rows together}
 catch_data <- bind_rows(catch1, catch2, catch3, catch4)
 # Clean up the environment
 rm(catch1, catch2, catch3, catch4) # Clean up the environment
 ```
 
-#prelim check
-```{r}
+```{r check data}
 catch_data
 head(catch_data)
 glimpse(catch_data)
 str(catch_data)
 ```
 
-#check specific variables
-```{r}
+```{r check site and species}
 catch_data |> 
   distinct(site)
 
 catch_data |> 
   distinct(species)
 ```
-# Load metadata
+
 ```{r load-metadata}
 metadata <- read_csv("../data/workshop2/estuary_metadata.csv")
 ```
-# Checks
+
 ```{r inspect-metadata}
 head(metadata)
 glimpse(metadata)
 ```
 
-### Fix site names in data and metadata and convert character to factor variables
 ```{r fix-site-names}
 catch_data <- catch_data |>
   mutate(
@@ -118,7 +109,7 @@ metadata <- metadata |>
   mutate(across(where(is.character), as_factor)
   )
 ```
-# Recheck
+
 ```{r recheck-site-names}
 catch_data |> 
   str()
@@ -126,54 +117,51 @@ catch_data |>
 #   distinct(site)
 str(metadata)
 ```
-###  Load Taxonomic Dictionary
+
 ```{r load-species-dict}
 species_dict <- read_csv("../data/workshop2/species_dictionary.csv")
 # Check
 head(species_dict)
 ```
-#check species name
-```{r}
+
+```{r check species name}
 catch_data |> 
   distinct(species)
 # Can see these are different to the dictionary
 species_dict |>
   distinct(common_name)
 ```
-#fix species names in catch_data to match dictionary
-```{r}
+
+```{r fix-species-names to match dictionary}
 catch_data <- catch_data |>
   mutate(
     species = str_to_lower(str_trim(species)),
     species = str_replace_all(species, " ", "_")
   )
 ```
-### Create new variable ("scientific_name") in catch log by joining with taxonomic dictionary 
+
 ```{r join-species-dict}
 catch_data <- catch_data |>
   mutate(common_name = species) |>
   left_join(species_dict, by = join_by(common_name))
 ```
-#recheck
-```{r}
-glimpse(catch_data)
-```
-# Load the sonde data, given code for data
+
+#Load the sonde data in order to access temperature, salinity, and turbidity data
 ```{r load-sonde}
 source(here::here("code/diw_sensor.R"))
 ```
-#join catch data with metadata and sensor data
-```{r}
+
+```{r join-catch-metadata-sensor}
 catch_data_final <- catch_data |>
   left_join(metadata, by = join_by(site == site_name)) |>
   left_join(sensor_daily, by = join_by(site, date))
 ```
-#check
-```{r}
+
+```{r check data}
 glimpse(catch_data_final)
 ```
-#wrangle data set to include the zeros
-```{r}
+
+```{r fill-missing-combinations of NA to 0}
 catch_data_final <- 
 catch_data_final |> 
   complete(
@@ -187,12 +175,10 @@ catch_data_final |>
     count = coalesce(count, 0)
   )
 ```
-###Finished data wrangling####
+#Data summary finsihed#
 
-#Look at values
-#### Salinity
-```{r}
-# Let's make a table
+#Look at values at salinity, temperature, and turbidity across the estuary zone
+```{r salinity summary and graph}
 sal_sum <- 
   catch_data_final |>
   group_by(zone) |>
@@ -203,7 +189,8 @@ sal_sum <-
     .groups = "drop"
   )
 
-# And from this a plot
+
+#| fig-cap: "Salinity Gradient across zones. Ross River Estuary System, Townsville, NQ, Australia May 2026."
 sal_sum |> 
   ggplot(aes(x = zone, y = median_salinity)) +
   geom_point() +
@@ -213,8 +200,8 @@ sal_sum |>
        x = "Zone",
        y = "Median Salinity (ppt)")
 ```
-### Turbidity
-```{r}
+
+```{r turbidity summary and graph}
 turb_sum <- 
   catch_data_final |>
   group_by(zone) |>
@@ -223,7 +210,7 @@ turb_sum <-
     median_turbidity = median(mean_turbidity, na.rm = TRUE),
     .groups = "drop"
   )
-
+#| fig-cap: "Turbidity Gradient across zones. Ross River Estuary System, Townsville, NQ, Australia May 2026."
 turb_sum |>
   ggplot(aes(x = zone, y = median_turbidity)) +
   geom_point() +
@@ -233,8 +220,8 @@ turb_sum |>
        x = "Zone",
        y = "Median Turbidity (NTU)")
 ```
-### And temperature
-```{r}
+
+```{r temperature summary and graph}
 temp_sum <- 
   catch_data_final |>
   group_by(zone) |>
@@ -243,7 +230,7 @@ temp_sum <-
     median_temperature = median(mean_temp, na.rm = TRUE),
     .groups = "drop"
   )
-
+#| fig-cap: "Temperature Gradient across zones. Ross River Estuary System, Townsville, NQ, Australia May 2026."
 temp_sum |>
   ggplot(aes(x = zone, y = median_temperature)) +
   geom_point() +
@@ -254,22 +241,8 @@ temp_sum |>
        y = "Median Temperature (°C)")
 
 ```
-#### Remake salinity plot nicely for publication
-```{r}
-#| fig-cap: "Salinity Gradient across zones. Ross River Estuary System, Townsville, NQ, Australia May 2026."
 
-sal_sum |> 
-  ggplot(aes(x = zone, y = median_salinity)) +
-  geom_point() +
-  geom_errorbar(aes(ymin = median_salinity - sd_salinity, ymax = median_salinity + sd_salinity), width = 0.2) +
-  theme_minimal() +
-  labs(#title = "Median Salinity by Zone with Standard Deviation Error Bars",
-       x = "Zone",
-       y = "Median Salinity (ppt)")
-  
-```
-# Calculate summary stats #fish abundance
-```{r}
+```{r calc-fish-stats}
 fish_stats <- catch_data_final |>
   group_by(zone, scientific_name) |>
   summarise(
@@ -279,7 +252,7 @@ fish_stats <- catch_data_final |>
   )
 ```
 
-#plot of fish abundance
+#Final Graph plot of Fish Abundance within the Estuary
 ```{r}
 fish_stats |> 
   ggplot(aes(x = zone, y = mean_catch, fill = scientific_name)) +
@@ -308,7 +281,3 @@ fish_stats |>
     y = "Abundance (per day)"
   )
 ```
-```{r}
-ggsave("fish_abundance_plot.png", width = 10, height = 6, units = "in", dpi = 300)
-```
-
