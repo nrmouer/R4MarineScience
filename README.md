@@ -1,4 +1,22 @@
 ## A repo with code and data for Techniques in Marine Science 1 (MB5370) - R for Marine Science
-Within the code file, I have multiple qmd files that I used to practise different dataset managing techniques. 
+Within the code file, I have multiple qmd files that I used to practise different dataset managing techniques across four different workshops within my module R4MarineScience. 
 
-File: 
+Workshop 1: Foundations of Data Science — Wrangling and Plotting
+  Task for workshop 1 included: workspace projects setup, repository path calibration, manual tidyverse grammar (AI-Off), descriptive data summaries, and introductory ggplot2 layer logic using Palmer Penguins.
+  Files used for workshop 1: MarineScience1.R, MS1ws.qmd, Penquins.qmd 
+  We turned off our AI-helper off to manage data completely manually. Within this workshop 
+
+Workshop 2: Advanced data wrangling: Extracting ecological signals from noisy systems
+  Tasks for workshop 2 included: Data reshaping architectures (pivoting), explicit zero engineering, transitioning from AI-Off to On, and executing un-scaffolded Data Rescue Mission.
+  Files used for workshop 2: R4MSworkshop2.qmd
+
+Workshop 3: Advanced Data Communication & Open-Ended Sourcing
+  Tasks for workshop 3 included: The Journal Plot Deconstruction Challenge and the open-ended Queensland Open Data Discovery Sprint (API data pulls and web scraping).
+  Files used for workshop 3: 
+
+Workshop 4: Spatial Engineering & Reproducible Reporting
+  Tasks for workshop 4 included: Native spatial features via the sf package, Coordinate Reference Systems (CRS), spatial joins, and migratory reporting using automated Quarto dynamic document builds.
+  Files used for workshop 4: WS2_Estuary_Prac.qmd, W2_FinalEx.qmd, diw_sensor.R
+  Files created from workshop 4: salinity_plot.png, temperature_plot.png, turbidity_plot.png, fish_abundance_plot.png
+
+
