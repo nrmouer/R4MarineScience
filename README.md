@@ -7,7 +7,7 @@ Workshop 1: Foundations of Data Science — Wrangling and Plotting
   
   Files used for workshop 1: MarineScience1.R, MS1ws.qmd, Penquins.qmd 
 
-  About: We turned off out AI-helper off to manage our data manually. 
+  
  
 
 
