@@ -46,9 +46,13 @@ rm(list = ls())
 ```{r load R packages}
 library(tidyverse) # Inc dplyr, ggplot2, lubridate etc
 library(readxl) # For reading in excel files
+
+
+
 ```
 
-```{r load excel files}
+
+```{r load-catch-1}
 catch1 <- read_excel(here::here("data/workshop2/estuary_catch_log.xlsx"), sheet = "Lower_ross")
 catch2 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 2)
 catch3 <- read_excel("../data/workshop2/estuary_catch_log.xlsx", sheet = 3)
@@ -281,3 +285,8 @@ fish_stats |>
     y = "Abundance (per day)"
   )
 ```
+```{r}
+gg
+```
+ 
+
